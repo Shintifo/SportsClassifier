@@ -18,7 +18,6 @@ def train_epoch(
 		device: torch.device,
 		loss_fn,
 		epoch: int,
-
 ):
 	model.train()
 	train_loss = 0.0
@@ -88,8 +87,8 @@ def main(path: Path, lr: float, epochs: int, batch_size: int, img_size: int, mod
 	train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
 	valid_loader = DataLoader(valid_set, batch_size=batch_size, shuffle=False)
 
-	# optimizer = optim.Adam(model.parameters(), lr=lr)
-	optimizer = optim.SGD(model.parameters(), lr=lr)
+	optimizer = optim.Adam(model.parameters(), lr=lr)
+	# optimizer = optim.SGD(model.parameters(), lr=lr)
 	loss_fn = nn.CrossEntropyLoss()
 	train(
 		model=model,

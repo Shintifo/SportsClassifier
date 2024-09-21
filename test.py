@@ -33,8 +33,13 @@ def test(
 
 			output = model(x)
 
+			softmax = nn.Softmax(dim=1)
+			output = softmax(output)
+
+
 			y_pred = (output >= 0.5).float()
-			correct += torch.sum(y_pred == y).item()
+
+			correct += torch.sum(torch.all(y_pred == y, dim=1)).item()
 			total += len(y_pred)
 			test_loop.set_postfix(accuracy=correct / total)
 

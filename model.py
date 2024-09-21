@@ -30,11 +30,9 @@ class Model(nn.Module):
 		self.classifier = nn.Sequential(
 			nn.Dropout(0.2),
 			nn.Linear(4608, 1024),
-			nn.Softmax(dim=1),
-
+			nn.ReLU(),
 			nn.Dropout(0.2),
 			nn.Linear(1024, 100),
-			nn.Softmax(dim=1),
 		)
 
 	def forward(self, x):
@@ -52,12 +50,13 @@ class Model(nn.Module):
 class EffNet(nn.Module):
 	def __init__(self):
 		super(EffNet, self).__init__()
-		self.model = models.efficientnet_v2_s(weights=models.EfficientNet_V2_S_Weights.DEFAULT)
+		# self.model = models.efficientnet_v2_s(weights=models.EfficientNet_V2_S_Weights.IMAGENET1K_V1)
+		self.model = models.efficientnet_b4(weights=models.EfficientNet_B4_Weights.IMAGENET1K_V1)
 
 		self.model.classifier =  nn.Sequential(
 			nn.Dropout(0.2),
-			nn.Linear(1280, 100),
-			nn.Softmax(dim=1)
+			nn.Linear(1792, 100),
+
 		)
 
 	def forward(self, x):
@@ -65,6 +64,7 @@ class EffNet(nn.Module):
 		return x
 
 def test(model, size):
+	print("Here!")
 	dummy_input = torch.randn(1, 3, size, size)
 	output = model(dummy_input)
 	print(output)
@@ -72,4 +72,4 @@ def test(model, size):
 
 if __name__ == '__main__':
 	print(EffNet().model)
-	test(EffNet(), 128)
+	# test(EffNet(), 128)
