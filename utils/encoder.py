@@ -1,16 +1,19 @@
 from pathlib import Path
+import os
 
-import numpy as np
 import torch
 from torch.nn.functional import one_hot
-import os
 
 class Encoder:
 	def __init__(self, path:Path):
 		self.path = path / "labels.txt"
 		self.values = self.create_encoding(self.path)
+		self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 	def read_labels(self, path):
+		if not os.path.exists(path):
+			collect_labels()
+
 		with open(path, 'r') as f:
 			lines = [line.strip() for line in f.readlines()]
 		return lines
@@ -25,21 +28,21 @@ class Encoder:
 
 	def decode(self, enc):
 		for key, value in self.values.items():
-			value = value.to("cuda" if torch.cuda.is_available() else "cpu").int()
+			value = value.to(self.device).int()
 			if (enc == value).all():
 				return key
-		return "Error"
+		return "No Label"
 
 	def encode(self, item) -> torch.Tensor:
 		if item not in self.values.keys():
 			raise Exception
 		return self.values[item]
 
-	def encodings(self) -> dict[str, torch.Tensor]:
-		return self.values
-
 
 def collect_labels():
+	"""
+	Creates labels.txt required for Encoder, that lists all possible labels.
+	"""
 	labels = []
 	main_dir = Path('datasets')
 	for file in os.listdir(main_dir / "train"):
@@ -49,8 +52,3 @@ def collect_labels():
 
 	with open(main_dir / "labels.txt", "w") as f:
 		f.write("\n".join(labels))
-	print()
-
-if __name__ == '__main__':
-	e = Encoder().values
-	print(e)

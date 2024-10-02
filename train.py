@@ -33,8 +33,10 @@ def train_epoch(
 		loss = loss_fn(output, y.float())
 		loss.backward()
 		optimizer.step()
+
 		train_loss += loss.item()
 		epoch_loop.set_postfix(loss=loss.item())
+
 	print("Epoch {}:".format(epoch))
 	print(" Train Loss:", train_loss / len(loader))
 
@@ -73,7 +75,7 @@ def save_checkpoint(
 
 
 def main(path: Path, lr: float, epochs: int, batch_size: int, img_size: int):
-	model = EffNet()
+	model = EffNet(load_effnet_weights=True)
 
 	train_set = SportsDataset(img_size=img_size, path=path, set_type='train')
 	valid_set = SportsDataset(img_size=img_size, path=path, set_type='valid')

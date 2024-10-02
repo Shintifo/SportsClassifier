@@ -29,9 +29,11 @@ def test(
 	dataset = "Test" if is_test else "Valid"
 	with torch.no_grad():
 		model.eval()
+
 		test_loop = tqdm(loader, total=len(loader), leave=False)
 		total = 0
 		correct = 0
+
 		for x, y in test_loop:
 			x, y = x.to(device), y.to(device)
 
@@ -56,20 +58,23 @@ def single_test(
 		model.eval()
 
 		img, label = test_set[index]
-
-		image = img.permute(1, 2, 0).to(device)
-		torch.save(image, "new.jpg")
-
 		img, label = img.to(device), label.to(device)
 
 		img.unsqueeze_(0)
 		output = model(img)
+
 	output = convert_output(output)
 	label = test_set.get_label(label)
 	predicted = test_set.get_label(output)
 
-	print("Label:", label)
-	print("Predicted:", predicted)
+	if label == predicted:
+		print("Correct!\n",label)
+	else:
+		print(
+			"Not correct!\n"
+			f"Label:{label}\n"
+			f"Predicted:{predicted}"
+		)
 
 
 def start_test(
@@ -97,12 +102,11 @@ def start_test(
 			single_test(model=model, test_set=test_set, index=index, device=device)
 
 
-def predict(image: bytes, model: nn.Module, device: torch.device, datasets_path = "sports"):
+def predict(image: bytes, model: nn.Module, device: torch.device, datasets_path):
 	with torch.no_grad():
 		model.eval()
 		image = Image.open(image)
 		image = SportsDataset.collect_transforms("prod")(image).unsqueeze(0).to(device)
-		print(image.shape)
 		output = model(image)
 
 	y_pred = convert_output(output)

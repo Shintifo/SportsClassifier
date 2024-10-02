@@ -5,7 +5,7 @@ from pathlib import Path
 
 from PIL import Image
 from torch.utils import data
-from torchvision.transforms import v2, transforms, InterpolationMode
+from torchvision.transforms import transforms, InterpolationMode
 
 from utils.encoder import Encoder
 
@@ -14,42 +14,25 @@ class SportsDataset(data.Dataset):
 	def __init__(self, img_size: int, path: Path, set_type: str = "test"):
 		super(SportsDataset, self).__init__()
 		self.data = []
-		self.encoder = Encoder()
-		self.path = path
-		self.type = set_type
+		self.encoder = Encoder(path)
 
-		self.load_data(path, f"{self.type}.txt")
+		self.load_data(path, f"{set_type}.txt")
 
-		self.transforms = self.collect_transforms(self.type, img_size)
-
-		if self.type == "train":
-			self.transforms = transforms.Compose([
-				transforms.RandomVerticalFlip(p=0.3),
-				transforms.RandomHorizontalFlip(),
-				transforms.Resize((img_size, img_size), interpolation=InterpolationMode.BILINEAR),
-				transforms.ToTensor()
-			])
-		else:
-			self.transforms = transforms.Compose([
-				transforms.Resize((img_size, img_size), interpolation=InterpolationMode.BILINEAR),
-				transforms.ToTensor()
-			])
-
+		self.transforms = self.collect_transforms(set_type, img_size)
 		self.normalize = transforms.Normalize(
 			mean=[0.485, 0.456, 0.406],
 			std=[0.229, 0.224, 0.225]
 		)
 
 	def __getitem__(self, index: int):
-		image = self.data[index]["img"]
+		image_path = self.data[index]["img"]
 
-		img = Image.open(image).convert('RGB')
+		img = Image.open(image_path).convert('RGB')
 		img = self.transforms(img)
 		img = self.normalize(img)
 
-		label = image.split(os.sep)[-2]
-		if self.type == "prod":
-			return img
+		#Its folder is a label
+		label = image_path.split(os.sep)[-2]
 
 		enc_label = self.encoder.encode(label)
 		return img, enc_label
@@ -90,6 +73,10 @@ class SportsDataset(data.Dataset):
 
 	@staticmethod
 	def __collect__(path: Path):
+		"""
+		Creates files with paths to images, split by groups
+		:param path: Path to whole dataset
+		"""
 		random.seed(337)
 		data = {
 			"train": [],
@@ -117,11 +104,7 @@ class SportsDataset(data.Dataset):
 
 if __name__ == '__main__':
 	parser = ArgumentParser()
-	subparsers = parser.add_subparsers(dest='mode')
-
-	convert_parser = subparsers.add_parser('collect')
-	convert_parser.add_argument('--path', type=Path, help='path to dataset')
-
+	parser.add_argument('--path', type=Path, help='path to dataset')
 	args = parser.parse_args()
 
 	SportsDataset.__collect__(args.path)

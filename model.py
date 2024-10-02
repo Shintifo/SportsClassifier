@@ -3,18 +3,15 @@ import torch.nn as nn
 from torchvision import models
 
 
-
-
-
-
-
 class EffNet(nn.Module):
-	def __init__(self):
+	def __init__(self, load_effnet_weights=False):
 		super(EffNet, self).__init__()
-		self.model = models.efficientnet_v2_s(weights=models.EfficientNet_V2_S_Weights.IMAGENET1K_V1)
-		# self.model = models.efficientnet_b4(weights=models.EfficientNet_B4_Weights.IMAGENET1K_V1)
+		# Load weights if only start training
+		weights = models.EfficientNet_V2_S_Weights.IMAGENET1K_V1 if load_effnet_weights else None
 
-		self.model.classifier =  nn.Sequential(
+		self.model = models.efficientnet_v2_s(weights=weights)
+
+		self.model.classifier = nn.Sequential(
 			nn.Dropout(0.2),
 			nn.Linear(1280, 100),
 		)
@@ -23,8 +20,8 @@ class EffNet(nn.Module):
 		x = self.model(x)
 		return x
 
+
 def test(model, size):
-	print("Here!")
 	dummy_input = torch.randn(1, 3, size, size)
 	output = model(dummy_input)
 	print(output)
@@ -32,4 +29,3 @@ def test(model, size):
 
 if __name__ == '__main__':
 	print(EffNet().model)
-	# test(EffNet(), 128)
