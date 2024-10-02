@@ -6,7 +6,7 @@ import torch
 from torch.utils.data import DataLoader
 from torch import nn, optim
 
-from datasets import SportsDataset
+from dataset import SportsDataset
 from model import Model, EffNet
 from test import test
 
@@ -35,7 +35,6 @@ def train_epoch(
 		optimizer.step()
 		train_loss += loss.item()
 		epoch_loop.set_postfix(loss=loss.item())
-	# print(output)
 	print("Epoch {}:".format(epoch))
 	print(" Train Loss:", train_loss / len(loader))
 
@@ -73,13 +72,8 @@ def save_checkpoint(
 	torch.save(obj, str(f"best.pth"))
 
 
-def main(path: Path, lr: float, epochs: int, batch_size: int, img_size: int, model: str):
-	match model:
-		case "effnet":
-			print("effnet")
-			model = EffNet()
-		case "custom":
-			model = Model()
+def main(path: Path, lr: float, epochs: int, batch_size: int, img_size: int):
+	model = EffNet()
 
 	train_set = SportsDataset(img_size=img_size, path=path, set_type='train')
 	valid_set = SportsDataset(img_size=img_size, path=path, set_type='valid')
@@ -106,10 +100,8 @@ if __name__ == "__main__":
 	parser.add_argument("--epochs", type=int, default=100, help="Number of epochs")
 	parser.add_argument("--batch_size", type=int, default=40, help="Batch size")
 	parser.add_argument("--lr", type=float, default=1e-4, help="Learning rate")
-	parser.add_argument("--model", type=str, default="effnet", help="Model version")
-	parser.add_argument("--img_size", type=int, default=156, help="Image size")
+	parser.add_argument("--img_size", type=int, default=128, help="Image size")
 	parser.add_argument("--dataset", type=Path, help="Path to data")
 	args = parser.parse_args()
 
-	main(lr=args.lr, epochs=args.epochs, batch_size=args.batch_size, path=args.dataset, img_size=args.img_size,
-		 model=args.model)
+	main(lr=args.lr, epochs=args.epochs, batch_size=args.batch_size, path=args.dataset, img_size=args.img_size)

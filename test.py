@@ -7,7 +7,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from datasets import SportsDataset
+from dataset import SportsDataset
 from model import Model, EffNet
 
 
@@ -35,7 +35,6 @@ def test(
 
 			softmax = nn.Softmax(dim=1)
 			output = softmax(output)
-
 
 			y_pred = (output >= 0.5).float()
 
@@ -65,30 +64,24 @@ def single_test(
 
 		img.unsqueeze_(0)
 		output = model(img)
-
+	softmax = nn.Softmax(dim=1)
+	output = softmax(output)
 	y_pred = (output >= 0.5).int()
 	label = test_set.get_label(label)
 	predicted = test_set.get_label(y_pred)
 
-	print("Label:",label)
+	print("Label:", label)
 	print("Predicted:", predicted)
 
 
 def start_test(
-		model_type: str,
 		checkpoint_path: Path,
 		batch_size: int,
 		dataset_path: Path,
 		img_size: int,
 		test_type: str
 ):
-
-	match model_type:
-		case "effnet":
-			model = EffNet()
-		case _:
-			model = Model()
-
+	model = EffNet()
 	device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 	model.to(device)
@@ -111,12 +104,11 @@ if __name__ == '__main__':
 
 	parser.add_argument("--test_type", type=str, default="full", help="Could be single or full")
 	parser.add_argument("--checkpoint", type=Path, help="path to checkpoint")
-	parser.add_argument("--model", type=str, help="model type")
-	parser.add_argument("--img_size", type=int, default=156, help="input image size")
+	parser.add_argument("--img_size", type=int, default=128, help="input image size")
 	parser.add_argument("--dataset", type=Path, help="path to test set")
 	parser.add_argument("--batch_size", type=int, help="Batch size")
 
 	args = parser.parse_args()
 
-	start_test(model_type=args.model, checkpoint_path=args.checkpoint, batch_size=args.batch_size,
+	start_test(checkpoint_path=args.checkpoint, batch_size=args.batch_size,
 			   dataset_path=args.dataset, img_size=args.img_size, test_type=args.test_type)

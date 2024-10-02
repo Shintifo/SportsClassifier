@@ -18,15 +18,19 @@ class SportsDataset(data.Dataset):
 	def __init__(self, img_size: int, path: Path, set_type: str = "test"):
 		super(SportsDataset, self).__init__()
 		self.data = []
-		self.encoder = None
+		self.encoder = Encoder()
 		self.path = path
+		self.type = set_type
 
-		self.load_data(path, f"{set_type}.txt")
+		self.load_data(path, f"{self.type}.txt")
 
-		if set_type == "train":
+		self.transforms = self.collect_transforms(self.type, img_size)
+
+		if self.type == "train":
 			self.transforms = transforms.Compose([
 				transforms.RandomVerticalFlip(p=0.3),
 				transforms.RandomHorizontalFlip(),
+				# transforms.GaussianBlur(kernel_size=5, sigma=2),
 				transforms.Resize((img_size, img_size), interpolation=InterpolationMode.BILINEAR),
 				transforms.ToTensor()
 			])
@@ -49,8 +53,10 @@ class SportsDataset(data.Dataset):
 		img = self.normalize(img)
 
 		label = image.split(os.sep)[-2]
-		enc_label = self.encoder.encode(label)
+		if self.type == "prod":
+			return img
 
+		enc_label = self.encoder.encode(label)
 		return img, enc_label
 
 	def __len__(self):
@@ -69,10 +75,23 @@ class SportsDataset(data.Dataset):
 				"label": label
 			})
 
-		self.encoder = Encoder(list(labels))
-
 	def get_label(self, enc_label) -> str:
 		return self.encoder.decode(enc_label)
+
+	@staticmethod
+	def collect_transforms(set_type, img_size=128):
+		if set_type == "train":
+			return transforms.Compose([
+				transforms.RandomVerticalFlip(p=0.3),
+				transforms.RandomHorizontalFlip(),
+				transforms.Resize((img_size, img_size), interpolation=InterpolationMode.BILINEAR),
+				transforms.ToTensor()
+			])
+
+		return transforms.Compose([
+			transforms.Resize((img_size, img_size), interpolation=InterpolationMode.BILINEAR),
+			transforms.ToTensor()
+		])
 
 	@staticmethod
 	def __collect__(path: Path):
