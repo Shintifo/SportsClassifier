@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 from torch import nn, optim
 
 from dataset import SportsDataset
-from model import Model, EffNet
+from model import EffNet
 from test import test
 
 
@@ -82,7 +82,6 @@ def main(path: Path, lr: float, epochs: int, batch_size: int, img_size: int):
 	valid_loader = DataLoader(valid_set, batch_size=batch_size, shuffle=False)
 
 	optimizer = optim.Adam(model.parameters(), lr=lr)
-	# optimizer = optim.SGD(model.parameters(), lr=lr)
 	loss_fn = nn.CrossEntropyLoss()
 	train(
 		model=model,

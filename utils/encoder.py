@@ -1,11 +1,14 @@
+from pathlib import Path
+
 import numpy as np
 import torch
 from torch.nn.functional import one_hot
 import os
 
 class Encoder:
-	def __init__(self, path='sports/labels.txt'):
-		self.values = self.create_encoding(path)
+	def __init__(self, path:Path):
+		self.path = path / "labels.txt"
+		self.values = self.create_encoding(self.path)
 
 	def read_labels(self, path):
 		with open(path, 'r') as f:
@@ -38,12 +41,13 @@ class Encoder:
 
 def collect_labels():
 	labels = []
-	for file in os.listdir('sports/train'):
-		path = os.path.join(os.path.join('sports/train', file))
+	main_dir = Path('datasets')
+	for file in os.listdir(main_dir / "train"):
+		path = os.path.join(os.path.join(main_dir / "train", file))
 		if os.path.isdir(path):
 			labels.append(file)
 
-	with open("sports/labels.txt", "w") as f:
+	with open(main_dir / "labels.txt", "w") as f:
 		f.write("\n".join(labels))
 	print()
 

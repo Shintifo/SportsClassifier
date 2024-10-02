@@ -6,14 +6,18 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from PIL import Image
 
 from dataset import SportsDataset
-from model import Model, EffNet
+from model import EffNet
+from utils.encoder import Encoder
 
 
-def HammingDistance(y_pred, y):
-	y_pred = (y_pred >= 0.5).float()
-	return 1.0 - torch.mean((y.float() != y_pred).float()).item()
+def convert_output(output):
+	softmax = nn.Softmax(dim=1)
+	output = softmax(output)
+	output = (output >= 0.5).int()
+	return output
 
 
 def test(
@@ -32,11 +36,7 @@ def test(
 			x, y = x.to(device), y.to(device)
 
 			output = model(x)
-
-			softmax = nn.Softmax(dim=1)
-			output = softmax(output)
-
-			y_pred = (output >= 0.5).float()
+			y_pred = convert_output(output)
 
 			correct += torch.sum(torch.all(y_pred == y, dim=1)).item()
 			total += len(y_pred)
@@ -64,11 +64,9 @@ def single_test(
 
 		img.unsqueeze_(0)
 		output = model(img)
-	softmax = nn.Softmax(dim=1)
-	output = softmax(output)
-	y_pred = (output >= 0.5).int()
+	output = convert_output(output)
 	label = test_set.get_label(label)
-	predicted = test_set.get_label(y_pred)
+	predicted = test_set.get_label(output)
 
 	print("Label:", label)
 	print("Predicted:", predicted)
@@ -97,6 +95,21 @@ def start_test(
 		case "single":
 			index = random.randint(0, len(test_set) - 1)
 			single_test(model=model, test_set=test_set, index=index, device=device)
+
+
+def predict(image: bytes, model: nn.Module, device: torch.device, datasets_path = "sports"):
+	with torch.no_grad():
+		model.eval()
+		image = Image.open(image)
+		image = SportsDataset.collect_transforms("prod")(image).unsqueeze(0).to(device)
+		print(image.shape)
+		output = model(image)
+
+	y_pred = convert_output(output)
+
+	encoder = Encoder(Path(datasets_path))
+	label = encoder.decode(y_pred)
+	return label
 
 
 if __name__ == '__main__':

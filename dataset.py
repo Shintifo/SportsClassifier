@@ -1,14 +1,10 @@
 import random
 import os
-import re
 from argparse import ArgumentParser
 from pathlib import Path
-import xml.etree.ElementTree as ET
 
-import torch
 from PIL import Image
 from torch.utils import data
-from torch.nn.functional import one_hot
 from torchvision.transforms import v2, transforms, InterpolationMode
 
 from utils.encoder import Encoder
@@ -30,7 +26,6 @@ class SportsDataset(data.Dataset):
 			self.transforms = transforms.Compose([
 				transforms.RandomVerticalFlip(p=0.3),
 				transforms.RandomHorizontalFlip(),
-				# transforms.GaussianBlur(kernel_size=5, sigma=2),
 				transforms.Resize((img_size, img_size), interpolation=InterpolationMode.BILINEAR),
 				transforms.ToTensor()
 			])
@@ -119,41 +114,6 @@ class SportsDataset(data.Dataset):
 
 
 # TODO updating dataset
-# TODO stratify data
-# TODO One-Hot Encoding
-
-
-def test_transform():
-	img_size = 156
-	t = transforms.Compose([
-		v2.RandomVerticalFlip(p=0.3),
-		v2.RandomHorizontalFlip(),
-		v2.ColorJitter(contrast=0.3, brightness=0.3, hue=0.1),
-		v2.Resize((img_size, img_size), interpolation=InterpolationMode.BILINEAR),
-		# v2.Compose([v2.ToImage(), v2.ToDtype(torch.float32, scale=True)]),
-	])
-
-	img = Image.open("img.jpg").convert('RGB')
-
-	img = t(img)
-	img.save("new.jpg")
-
-
-def count_labels():
-	a = set()
-
-	with open("train.csv", "r") as f:
-		lines = f.readlines()
-	num = len(lines)
-	for line in lines:
-		name, label = line.strip().split(",")
-		a.add(label)
-		if label in ['unknown', 'smoke']:
-			num -= 1
-	print(a)
-	print(len(a))
-	print(num)
-
 
 if __name__ == '__main__':
 	parser = ArgumentParser()
@@ -162,16 +122,6 @@ if __name__ == '__main__':
 	convert_parser = subparsers.add_parser('collect')
 	convert_parser.add_argument('--path', type=Path, help='path to dataset')
 
-	create_parser = subparsers.add_parser('create')
-	create_parser.add_argument('--path', type=Path, help='path to dataset')
-	create_parser.add_argument('--ratio', type=float, default=0.8)
-
-	convert_parser = subparsers.add_parser('test')
-
 	args = parser.parse_args()
 
-	match args.mode:
-		case 'collect':
-			SportsDataset.__collect__(args.path)
-		case 'test':
-			test_transform()
+	SportsDataset.__collect__(args.path)
