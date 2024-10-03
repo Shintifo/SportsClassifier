@@ -106,7 +106,7 @@ if __name__ == '__main__':
 	parser.add_argument("--test_type", type=str, default="full", help="Could be single or full")
 	parser.add_argument("--checkpoint", type=Path, help="path to checkpoint")
 	parser.add_argument("--img_size", type=int, default=128, help="input image size")
-	parser.add_argument("--dataset", type=Path, help="path to test set")
+	parser.add_argument("--dataset", type=Path, help="path to test imgs set")
 	parser.add_argument("--batch_size", type=int, help="Batch size")
 
 	args = parser.parse_args()

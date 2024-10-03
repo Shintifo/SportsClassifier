@@ -8,11 +8,11 @@ from torch.utils import data
 from PIL import Image
 from torchvision.transforms import transforms, InterpolationMode
 
-from encoder import Encoder
+from deployment.encoder import Encoder
 
 
 class SportsDataset(data.Dataset):
-	def __init__(self, img_size: int, path: Path, set_type: str = "test"):
+	def __init__(self, img_size: int, path: Path, set_type: str = "test imgs"):
 		super(SportsDataset, self).__init__()
 		self.data = []
 		self.encoder = Encoder(path)
@@ -84,14 +84,14 @@ class SportsDataset(data.Dataset):
 		random.seed(337)
 		data = {
 			"train": [],
-			"test": [],
+			"test imgs": [],
 			"valid": []
 		}
 		for dirpath, dirnames, filenames in os.walk(path):
 			if len(dirnames) != 0:
 				continue
 
-			# Train, test, val
+			# Train, test imgs, val
 			subset = dirpath.split(os.sep)[-2]
 
 			# We reach folder with images

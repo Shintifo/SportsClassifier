@@ -5,3 +5,4 @@ Pillow
 numpy
 starlette
 onnxruntime
+python-multipart
