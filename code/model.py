@@ -4,7 +4,7 @@ from torchvision import models
 
 
 class EffNet(nn.Module):
-	def __init__(self, load_effnet_weights=False):
+	def __init__(self, load_effnet_weights=False, export=False):
 		super(EffNet, self).__init__()
 		# Load weights if only start training
 		weights = models.EfficientNet_V2_S_Weights.IMAGENET1K_V1 if load_effnet_weights else None
@@ -15,9 +15,13 @@ class EffNet(nn.Module):
 			nn.Dropout(0.2),
 			nn.Linear(1280, 100),
 		)
+		self.export = export
+
 
 	def forward(self, x):
 		x = self.model(x)
+		if self.export:
+			x = nn.Softmax(dim=1)(x)
 		return x
 
 

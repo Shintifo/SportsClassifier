@@ -3,11 +3,12 @@ import os
 from argparse import ArgumentParser
 from pathlib import Path
 
-from PIL import Image
+import torch
 from torch.utils import data
+from PIL import Image
 from torchvision.transforms import transforms, InterpolationMode
 
-from utils.encoder import Encoder
+from encoder import Encoder
 
 
 class SportsDataset(data.Dataset):
@@ -34,7 +35,10 @@ class SportsDataset(data.Dataset):
 		#Its folder is a label
 		label = image_path.split(os.sep)[-2]
 
-		enc_label = self.encoder.encode(label)
+		idx = self.encoder.encode(label)
+		enc_label = torch.zeros(self.encoder.num_classes)
+		enc_label[idx] = 1
+
 		return img, enc_label
 
 	def __len__(self):
@@ -101,10 +105,10 @@ class SportsDataset(data.Dataset):
 
 
 # TODO updating dataset
-
 if __name__ == '__main__':
 	parser = ArgumentParser()
 	parser.add_argument('--path', type=Path, help='path to dataset')
 	args = parser.parse_args()
 
 	SportsDataset.__collect__(args.path)
+

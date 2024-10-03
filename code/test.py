@@ -6,11 +6,9 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from PIL import Image
 
 from dataset import SportsDataset
 from model import EffNet
-from utils.encoder import Encoder
 
 
 def convert_output(output):
@@ -68,7 +66,7 @@ def single_test(
 	predicted = test_set.get_label(output)
 
 	if label == predicted:
-		print("Correct!\n",label)
+		print("Correct!\n", label)
 	else:
 		print(
 			"Not correct!\n"
@@ -100,20 +98,6 @@ def start_test(
 		case "single":
 			index = random.randint(0, len(test_set) - 1)
 			single_test(model=model, test_set=test_set, index=index, device=device)
-
-
-def predict(image: bytes, model: nn.Module, device: torch.device, datasets_path):
-	with torch.no_grad():
-		model.eval()
-		image = Image.open(image)
-		image = SportsDataset.collect_transforms("prod")(image).unsqueeze(0).to(device)
-		output = model(image)
-
-	y_pred = convert_output(output)
-
-	encoder = Encoder(Path(datasets_path))
-	label = encoder.decode(y_pred)
-	return label
 
 
 if __name__ == '__main__':
