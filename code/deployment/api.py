@@ -12,10 +12,18 @@ from encoder import Encoder
 
 app = FastAPI()
 
+model = None
+
 
 @app.get("/")
 async def root():
 	return RedirectResponse(url="/docs", status_code=302)
+
+
+@app.on_event("startup")
+async def startup_event():
+	global model
+	model = onnxruntime.InferenceSession("model.onnx")
 
 
 @app.post("/predict/")
@@ -36,17 +44,18 @@ def image_preprocess(raw_bytes: bytes):
 
 
 def run_onnx(file_content):
+	global model
 	img = image_preprocess(file_content)
-	ort_session = onnxruntime.InferenceSession("model.onnx")
 
-	input_name = ort_session.get_inputs()[0].name
-	prediction = ort_session.run(None, {input_name: img})[0]
+	input_name = model.get_inputs()[0].name
+	prediction = model.run(None, {input_name: img})[0]
 
 	idx = int(np.argmax(prediction[0]))
 	encoder = Encoder(Path(""))
 	pred_class = encoder.decode(idx)
 
 	return pred_class
+
 
 if __name__ == "__main__":
 	uvicorn.run(app, host="0.0.0.0", port=8000)

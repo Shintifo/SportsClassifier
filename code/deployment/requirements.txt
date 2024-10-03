@@ -1,8 +1,8 @@
 fastapi
 streamlit
 uvicorn
+python-multipart
+starlette
 Pillow
 numpy
-starlette
 onnxruntime
-python-multipart
