@@ -1,0 +1,7 @@
+fastapi
+streamlit
+uvicorn
+Pillow
+numpy
+starlette
+onnxruntime
