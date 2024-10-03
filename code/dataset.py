@@ -95,13 +95,26 @@ class SportsDataset(data.Dataset):
 			subset = dirpath.split(os.sep)[-2]
 
 			# We reach folder with images
-			items = [f"{dirpath}/{file}\n" for file in filenames if file.endswith("jpg")]
+			items = [f"{dirpath}/{file}\n" for file in filenames if file.endswith(("jpg", "png", "jpeg"))]
 			data[subset].extend(items)
 
 		for subset in data.keys():
 			random.shuffle(data[subset])
 			with open(f"{path}/{subset}.txt", "w") as f:
 				[f.write(item) for item in data[subset]]
+
+	@staticmethod
+	def update_dataset():
+		random.seed(337)
+		buffdata_path = Path("sports/new_data")
+
+		with open(buffdata_path / "labels/labels.txt", "r") as f:
+			data_labels = [line.split(",") for line in f]
+
+		random.shuffle(data_labels)
+		# for img, label in data_labels:
+
+
 
 
 # TODO updating dataset

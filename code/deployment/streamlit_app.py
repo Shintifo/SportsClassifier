@@ -31,7 +31,6 @@ def predict(uploaded_file):
     """
 
     st.markdown(output, unsafe_allow_html=True)
-    # st.write(f"Prediction: {prediction}")
 
 
 if __name__ == '__main__':
